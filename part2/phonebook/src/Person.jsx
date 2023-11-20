@@ -1,11 +1,8 @@
-const Person = ({ persons }) => (
-  <>
-    {persons.map((person) => (
-      <p key={person.id}>
-        {person.name} {person.number}
-      </p>
-    ))}
-  </>
+const Person = ({ name, number, event }) => (
+  <p>
+    {name} {number}
+    <button onClick={event}>Delete</button>
+  </p>
 );
 
 export default Person;
