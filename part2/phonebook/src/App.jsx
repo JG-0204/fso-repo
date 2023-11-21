@@ -3,6 +3,7 @@ import personServices from './services/persons';
 import Filter from './Filter';
 import PersonForm from './PersonForm';
 import Person from './Person';
+import Notification from './Notification';
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -11,6 +12,9 @@ const App = () => {
 
   const [newSearchText, setNewSearchText] = useState('');
   const [filteredPersons, setFilteredPersons] = useState([]);
+
+  const [message, setMessage] = useState(null);
+  const [isErrorMessage, setIsErrorMessage] = useState(false);
 
   useEffect(() => {
     personServices.getAll().then((persons) => {
@@ -50,10 +54,24 @@ const App = () => {
     const id = person.id;
     const personCopy = { ...person, number: newNumber };
 
-    personServices.update(id, personCopy).then((person) => {
-      setPersons(persons.map((p) => (p.id !== id ? p : person)));
-      setFilteredPersons(persons.map((p) => (p.id !== id ? p : person)));
-    });
+    personServices
+      .update(id, personCopy)
+      .then((person) => {
+        setPersons(persons.map((p) => (p.id !== id ? p : person)));
+        setFilteredPersons(persons.map((p) => (p.id !== id ? p : person)));
+      })
+      .catch(() => {
+        setIsErrorMessage(true);
+        setMessage(
+          `Information of ${person.name} has already been removed from server`,
+        );
+        setTimeout(() => {
+          setMessage(null);
+          setIsErrorMessage(false);
+        }, 3000);
+        setPersons(persons.filter((p) => p.id !== id));
+        setFilteredPersons(persons.filter((p) => p.id !== id));
+      });
   };
 
   const handleAddPerson = (e) => {
@@ -65,6 +83,10 @@ const App = () => {
         )
       ) {
         updatePersonNumber();
+        setMessage(`${newName}'s new number has been saved.`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 3000);
       }
     } else {
       const newPerson = { name: newName, number: newNumber };
@@ -73,6 +95,10 @@ const App = () => {
         setPersons(persons.concat(person));
         setFilteredPersons(persons.concat(person));
       });
+      setMessage(`${newName} has been added.`);
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
     }
     setNewName('');
     setNewNumber('');
@@ -88,11 +114,17 @@ const App = () => {
     }
   };
 
+  // style
+  const h2Style = {
+    fontFamily: 'Arial',
+  };
+
   return (
     <div>
-      <h2>Phonebook</h2>
+      <h2 style={h2Style}>Phonebook</h2>
+      <Notification message={message} errorMessage={isErrorMessage} />
       <Filter value={newSearchText} event={handleFilterInput} />
-      <h2>add a new</h2>
+      <h2 style={h2Style}>Add a new</h2>
       <PersonForm
         formEvent={handleAddPerson}
         nameInputEvent={handleNameInput}
@@ -100,7 +132,7 @@ const App = () => {
         nameInputValue={newName}
         numberInputValue={newNumber}
       />
-      <h2>Numbers</h2>
+      <h2 style={h2Style}>Numbers</h2>
       {filteredPersons.map((person) => (
         <Person
           key={person.id}
