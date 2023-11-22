@@ -30,15 +30,7 @@ const App = () => {
     const filteredResult = persons.filter((person) =>
       person.name.toLowerCase().includes(searchInputText.toLowerCase()),
     );
-
     setFilteredPersons(filteredResult);
-  };
-
-  const checkIfAlreadyInArray = () => {
-    if (persons.find((person) => person.name === newName) !== undefined) {
-      return true;
-    }
-    return false;
   };
 
   const handleNameInput = (e) => {
@@ -47,6 +39,47 @@ const App = () => {
 
   const handleNumberInput = (e) => {
     setNewNumber(e.target.value);
+  };
+
+  const handleAddPerson = (e) => {
+    e.preventDefault();
+    if (!isAlreadyInArray()) {
+      const newPerson = { name: newName, number: newNumber };
+
+      personServices.create(newPerson).then((person) => {
+        setPersons(persons.concat(person));
+        setFilteredPersons(persons.concat(person));
+      });
+      setMessage(`${newName} has been added.`);
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+
+      setNewName('');
+      setNewNumber('');
+      return;
+    }
+
+    const isUpdating = confirm(
+      `${newName} is already added to phonebook, replace old number to a new one?`,
+    );
+
+    if (isUpdating) {
+      updatePersonNumber();
+      setMessage(`${newName}'s new number has been saved.`);
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+    }
+    setNewName('');
+    setNewNumber('');
+  };
+
+  const isAlreadyInArray = () => {
+    if (persons.find((person) => person.name === newName) !== undefined) {
+      return true;
+    }
+    return false;
   };
 
   const updatePersonNumber = () => {
@@ -69,45 +102,16 @@ const App = () => {
           setMessage(null);
           setIsErrorMessage(false);
         }, 3000);
-        setPersons(persons.filter((p) => p.id !== id));
         setFilteredPersons(persons.filter((p) => p.id !== id));
       });
-  };
-
-  const handleAddPerson = (e) => {
-    e.preventDefault();
-    if (checkIfAlreadyInArray()) {
-      if (
-        window.confirm(
-          `${newName} is already added to phonebook, replce the old number with a new one?`,
-        )
-      ) {
-        updatePersonNumber();
-        setMessage(`${newName}'s new number has been saved.`);
-        setTimeout(() => {
-          setMessage(null);
-        }, 3000);
-      }
-    } else {
-      const newPerson = { name: newName, number: newNumber };
-
-      personServices.create(newPerson).then((person) => {
-        setPersons(persons.concat(person));
-        setFilteredPersons(persons.concat(person));
-      });
-      setMessage(`${newName} has been added.`);
-      setTimeout(() => {
-        setMessage(null);
-      }, 3000);
-    }
-    setNewName('');
-    setNewNumber('');
   };
 
   const deletePerson = (id) => () => {
     const person = persons.find((person) => person.id === id);
 
-    if (window.confirm(`Remove ${person.name} from the phonebook?`)) {
+    const isDeleting = confirm(`Remove ${person.name} from the phonebook?`);
+
+    if (isDeleting) {
       personServices.remove(id, person);
       setFilteredPersons(persons.filter((p) => p !== person));
       setPersons(persons.filter((p) => p !== person));
@@ -122,7 +126,7 @@ const App = () => {
   return (
     <div>
       <h2 style={h2Style}>Phonebook</h2>
-      <Notification message={message} errorMessage={isErrorMessage} />
+      <Notification message={message} isErrorMessage={isErrorMessage} />
       <Filter value={newSearchText} event={handleFilterInput} />
       <h2 style={h2Style}>Add a new</h2>
       <PersonForm

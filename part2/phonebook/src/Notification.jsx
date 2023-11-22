@@ -1,17 +1,15 @@
-const Notification = ({ message, errorMessage }) => {
+const Notification = ({ message, isErrorMessage }) => {
   if (message === null) return null;
 
-  const divStyle = !errorMessage
+  const divStyle = !isErrorMessage
     ? {
-        backgroundColor: 'yellow',
         padding: '1rem',
-        border: '3px solid black',
+        border: '5px solid green',
         marginBlock: '1.5rem',
       }
     : {
-        backgroundColor: 'red',
         padding: '1rem',
-        border: '3px solid black',
+        border: '5px solid red',
         marginBlock: '1.5rem',
       };
 

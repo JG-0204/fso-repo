@@ -14,6 +14,16 @@
       "name": "Yellow",
       "number": "1",
       "id": 3
+    },
+    {
+      "name": "Orange",
+      "number": "1",
+      "id": 4
+    },
+    {
+      "name": "Violet",
+      "number": "1",
+      "id": 5
     }
   ]
 }
